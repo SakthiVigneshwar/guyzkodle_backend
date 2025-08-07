@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/clue")
-@CrossOrigin(origins = "*") // Change this for production
+@CrossOrigin(origins = "https://guyzzkodle-frontend.vercel.app")
 public class ClueController {
 
     @Autowired
