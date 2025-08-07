@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface ClueRepository extends MongoRepository<ClueSet, String> {
+public interface ClueSetRepository extends MongoRepository<ClueSet, String> {
     Optional<ClueSet> findByDateAndSlot(String date, String slot);
 }
