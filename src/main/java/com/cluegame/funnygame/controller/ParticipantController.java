@@ -23,15 +23,16 @@ public class ParticipantController {
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
     }
+
     @PostMapping("/submit")
     public ResponseEntity<String> submitResult(@RequestBody Map<String, Object> body) {
         try {
             String name = body.get("name").toString();
             int seconds = Integer.parseInt(body.get("seconds").toString());
             String status = body.get("status").toString(); // WIN / LOSS
-            int attempts = Integer.parseInt(body.get("attempts").toString());
+            int attemptNumber = Integer.parseInt(body.get("attemptNumber").toString());
 
-            participantService.recordResult(name, seconds, status, attempts);
+            participantService.recordResult(name, seconds, status, attemptNumber);
 
             return ResponseEntity.ok("Success");
         } catch (Exception e) {
@@ -41,22 +42,19 @@ public class ParticipantController {
         }
     }
 
-    // 🔥 Today's leaderboard
     @GetMapping("/today")
     public List<Participant> getTodayResults() {
         return participantService.getAllSortedByTimeForToday();
     }
 
-    // 🔥 Optional: pass any date (yyyy-mm-dd) to get results
     @GetMapping("/date/{date}")
     public List<Participant> getResultsForDate(@PathVariable String date) {
-        LocalDate localDate = LocalDate.parse(date); // expects format: yyyy-MM-dd
+        LocalDate localDate = LocalDate.parse(date);
         return participantService.getAllSortedByTimeForDate(localDate);
     }
+
     @GetMapping("/all")
     public List<Participant> getAllParticipants() {
         return participantService.getAllParticipants();
     }
-
-
 }

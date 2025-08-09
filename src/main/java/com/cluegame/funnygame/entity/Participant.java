@@ -18,11 +18,10 @@ public class Participant {
     private String id; // MongoDB uses String IDs by default
 
     private String name;
-    private Integer attemptNumber   ; // attempt count per player per day
+    private Integer attemptNumber; // attempt count per player per day
     private Integer seconds;
     private LocalDateTime attemptDateTime; // exact date+time of attempt
     private String status; // "WIN" or "LOSS"
-    private Integer attempts;
-    private LocalDate completedDate;
-
+    private Integer attempts; // total attempts (lifetime or daily depending on logic)
+    private LocalDate completedDate; // win date
 }

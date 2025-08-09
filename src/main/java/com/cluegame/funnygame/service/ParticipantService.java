@@ -19,8 +19,7 @@ public class ParticipantService {
     @Autowired
     private ParticipantRepository participantRepository;
 
-
-    // ✅ Only preload names – leave other fields unset (MongoDB won't store them)
+    // ✅ Preload only names – leave other fields unset
     @PostConstruct
     public void preloadNames() {
         participantRepository.deleteAll();
@@ -35,32 +34,47 @@ public class ParticipantService {
             participantRepository.findByName(name).orElseGet(() -> {
                 Participant p = new Participant();
                 p.setName(name);
+                p.setAttempts(0);
                 return participantRepository.save(p);
             });
         }
     }
 
-    // ✅ Check if a participant name exists
+    // ✅ Check if participant name exists
     public boolean isValidParticipant(String name) {
         return participantRepository.findByName(name).isPresent();
     }
 
-    // ✅ Record success attempt (used when UI submits time)
-    public void recordSuccess(String name, int seconds) {
-        Optional<Participant> optional = participantRepository.findByName(name);
-        if (optional.isPresent()) {
-            Participant participant = optional.get();
+    // ✅ Unified record method for WIN/LOSS
+    public void recordResult(String name, int seconds, String status, int attemptNumber) {
+        LocalDate today = LocalDate.now();
 
-            participant.setAttempts(
-                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
-            );
-            participant.setSeconds(seconds);
-            participant.setCompletedDate(LocalDate.now());
-            participantRepository.save(participant);
+        Participant participant = participantRepository
+                .findByNameAndCompletedDate(name, today)
+                .orElseGet(() -> participantRepository.findByName(name).orElse(new Participant()));
+
+        participant.setName(name);
+        participant.setAttemptNumber(attemptNumber);
+        participant.setSeconds(seconds > 0 ? seconds : null);
+        participant.setAttemptDateTime(LocalDateTime.now());
+        participant.setStatus(status);
+
+        // Attempts count
+        if (participant.getAttempts() == null) {
+            participant.setAttempts(1);
+        } else {
+            participant.setAttempts(participant.getAttempts() + 1);
         }
+
+        // WIN → completedDate = today
+        if ("WIN".equalsIgnoreCase(status)) {
+            participant.setCompletedDate(today);
+        }
+
+        participantRepository.save(participant);
     }
 
-    // ✅ Get today's participants with time, sorted by seconds
+    // ✅ Today's leaderboard
     public List<Participant> getAllSortedByTimeForToday() {
         LocalDate today = LocalDate.now();
         return participantRepository.findAllByCompletedDate(today)
@@ -70,7 +84,7 @@ public class ParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get participants for any date
+    // ✅ Get participants for a given date
     public List<Participant> getAllSortedByTimeForDate(LocalDate date) {
         return participantRepository.findAllByCompletedDate(date)
                 .stream()
@@ -79,25 +93,8 @@ public class ParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get all participants (useful for debugging or admin UI)
+    // ✅ Get all participants (admin/debug)
     public List<Participant> getAllParticipants() {
         return participantRepository.findAll();
-    }
-    // ✅ Record success or loss attempt
-    public void recordResult(String name, int seconds, String status, int attempts) {
-        Participant participant = participantRepository.findByName(name)
-                .orElse(new Participant());
-
-        participant.setName(name);
-        participant.setSeconds(seconds);
-        participant.setStatus(status);
-        participant.setAttempts(attempts);
-        participant.setAttemptDateTime(LocalDateTime.now());
-
-        if ("WIN".equalsIgnoreCase(status)) {
-            participant.setCompletedDate(LocalDate.now());
-        }
-
-        participantRepository.save(participant);
     }
 }
