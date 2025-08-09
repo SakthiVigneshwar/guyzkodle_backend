@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -50,31 +49,14 @@ public class ParticipantService {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
-
-            // Get current slot
-            String currentSlot = getCurrentSlot();
-
-            // Reset attempts if slot changed
-            if (participant.getLastResetSlot() == null || !participant.getLastResetSlot().equals(currentSlot)) {
-                participant.setAttempts(0);
-                participant.setLastResetSlot(currentSlot);
-            }
-
-            // Increment attempts
-            participant.setAttempts(participant.getAttempts() == null ? 1 : participant.getAttempts() + 1);
-
-            // Set success info
+            // Update only on submit
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
             participant.setSeconds(seconds);
             participant.setCompletedDate(LocalDate.now());
-
             participantRepository.save(participant);
         }
-    }
-
-    // Helper method to get current slot
-    private String getCurrentSlot() {
-        int hour = LocalTime.now().getHour();
-        return hour < 12 ? "morning" : "evening";
     }
 
     // ✅ Get today's participants with time, sorted by seconds
