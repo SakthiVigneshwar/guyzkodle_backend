@@ -1,11 +1,13 @@
 package com.cluegame.funnygame.controller;
 
+import com.cluegame.funnygame.dto.SubmitResultResponse;
 import com.cluegame.funnygame.entity.Participant;
 import com.cluegame.funnygame.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +25,15 @@ public class ParticipantController {
     }
 
     @PostMapping("/submit")
-    public String submitResult(@RequestBody Map<String, Object> body) {
+    public SubmitResultResponse submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
         int seconds = Integer.parseInt(body.get("seconds").toString());
-        participantService.recordSuccess(name, seconds);
-        return "Success";
+        String status = body.get("status").toString();
+        String timeStr = body.get("time").toString();
+
+        LocalTime attemptTime = LocalTime.parse(timeStr);
+
+        return participantService.recordSuccess(name, seconds, status, attemptTime);
     }
 
     // 🔥 Today's leaderboard

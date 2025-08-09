@@ -1,5 +1,6 @@
 package com.cluegame.funnygame.service;
 
+import com.cluegame.funnygame.dto.SubmitResultResponse;
 import com.cluegame.funnygame.entity.Participant;
 import com.cluegame.funnygame.repository.ParticipantRepository;
 import jakarta.annotation.PostConstruct;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -45,18 +47,50 @@ public class ParticipantService {
     }
 
     // ✅ Record success attempt (used when UI submits time)
-    public void recordSuccess(String name, int seconds) {
-        Optional<Participant> optional = participantRepository.findByName(name);
-        if (optional.isPresent()) {
-            Participant participant = optional.get();
-            // Update only on submit
-            participant.setAttempts(
-                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
-            );
-            participant.setSeconds(seconds);
-            participant.setCompletedDate(LocalDate.now());
-            participantRepository.save(participant);
+
+    public SubmitResultResponse recordSuccess(String name, int seconds, String status, LocalTime attemptTime) {
+        Participant participant = participantRepository.findByName(name)
+                .orElseGet(() -> {
+                    Participant newParticipant = new Participant();
+                    newParticipant.setName(name);
+                    newParticipant.setAttempts(0);
+                    newParticipant.setAttemptDetails(new java.util.ArrayList<>());
+                    return newParticipant;
+                });
+
+        int currentAttempt = participant.getAttempts() == null ? 0 : participant.getAttempts();
+
+        // Get previous attempt result
+        String previousAttemptResult = null;
+        List<Participant.Attempt> attemptsList = participant.getAttemptDetails();
+        if (!attemptsList.isEmpty()) {
+            previousAttemptResult = attemptsList.get(attemptsList.size() - 1).getStatus();
         }
+
+        // Increment current attempt count
+        currentAttempt++;
+
+        participant.setAttempts(currentAttempt);
+        participant.setSeconds(seconds);
+        participant.setCompletedDate(LocalDate.now());
+
+        Participant.Attempt newAttempt = new Participant.Attempt(
+                LocalDate.now(),
+                attemptTime,
+                currentAttempt,
+                status,
+                seconds
+        );
+
+        participant.getAttemptDetails().add(newAttempt);
+
+        participantRepository.save(participant);
+
+        return new SubmitResultResponse(
+                participant.getAttemptDetails().size(),
+                currentAttempt,
+                previousAttemptResult
+        );
     }
 
     // ✅ Get today's participants with time, sorted by seconds
