@@ -49,7 +49,7 @@ public class ParticipantService {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
-            // Update only on submit
+
             participant.setAttempts(
                     participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
             );
@@ -82,4 +82,26 @@ public class ParticipantService {
     public List<Participant> getAllParticipants() {
         return participantRepository.findAll();
     }
+    // ✅ Record success or loss attempt
+    public void recordSuccess(String name, int seconds, String status) {
+        // Count how many attempts already made today
+        LocalDate today = LocalDate.now();
+        List<Participant> todayAttempts = participantRepository.findAll()
+                .stream()
+                .filter(p -> p.getName().equals(name) && p.getAttemptDateTime() != null &&
+                        p.getAttemptDateTime().toLocalDate().equals(today))
+                .collect(Collectors.toList());
+
+        int nextAttempt = todayAttempts.size() + 1;
+
+        Participant attemptRecord = new Participant();
+        attemptRecord.setName(name);
+        attemptRecord.setAttemptNumber(nextAttempt);
+        attemptRecord.setSeconds(seconds);
+        attemptRecord.setAttemptDateTime(java.time.LocalDateTime.now());
+        attemptRecord.setStatus(status.toUpperCase()); // WIN or LOSS
+
+        participantRepository.save(attemptRecord);
+    }
+
 }

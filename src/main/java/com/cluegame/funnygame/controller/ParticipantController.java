@@ -26,7 +26,8 @@ public class ParticipantController {
     public String submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
         int seconds = Integer.parseInt(body.get("seconds").toString());
-        participantService.recordSuccess(name, seconds);
+        String status = body.get("status").toString(); // WIN / LOSS
+        participantService.recordSuccess(name, seconds, status);
         return "Success";
     }
 
@@ -46,4 +47,6 @@ public class ParticipantController {
     public List<Participant> getAllParticipants() {
         return participantService.getAllParticipants();
     }
+
+
 }
