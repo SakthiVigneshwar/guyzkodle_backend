@@ -3,6 +3,8 @@ package com.cluegame.funnygame.controller;
 import com.cluegame.funnygame.entity.Participant;
 import com.cluegame.funnygame.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,14 +23,22 @@ public class ParticipantController {
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
     }
-
     @PostMapping("/submit")
-    public String submitResult(@RequestBody Map<String, Object> body) {
-        String name = body.get("name").toString();
-        int seconds = Integer.parseInt(body.get("seconds").toString());
-        String status = body.get("status").toString(); // WIN / LOSS
-        participantService.recordSuccess(name, seconds, status);
-        return "Success";
+    public ResponseEntity<String> submitResult(@RequestBody Map<String, Object> body) {
+        try {
+            String name = body.get("name").toString();
+            int seconds = Integer.parseInt(body.get("seconds").toString());
+            String status = body.get("status").toString(); // WIN / LOSS
+            int attempts = Integer.parseInt(body.get("attempts").toString());
+
+            participantService.recordResult(name, seconds, status, attempts);
+
+            return ResponseEntity.ok("Success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
     }
 
     // 🔥 Today's leaderboard

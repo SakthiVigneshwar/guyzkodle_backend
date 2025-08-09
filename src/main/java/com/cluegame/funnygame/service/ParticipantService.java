@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -83,25 +84,20 @@ public class ParticipantService {
         return participantRepository.findAll();
     }
     // ✅ Record success or loss attempt
-    public void recordSuccess(String name, int seconds, String status) {
-        // Count how many attempts already made today
-        LocalDate today = LocalDate.now();
-        List<Participant> todayAttempts = participantRepository.findAll()
-                .stream()
-                .filter(p -> p.getName().equals(name) && p.getAttemptDateTime() != null &&
-                        p.getAttemptDateTime().toLocalDate().equals(today))
-                .collect(Collectors.toList());
+    public void recordResult(String name, int seconds, String status, int attempts) {
+        Participant participant = participantRepository.findByName(name)
+                .orElse(new Participant());
 
-        int nextAttempt = todayAttempts.size() + 1;
+        participant.setName(name);
+        participant.setSeconds(seconds);
+        participant.setStatus(status);
+        participant.setAttempts(attempts);
+        participant.setAttemptDateTime(LocalDateTime.now());
 
-        Participant attemptRecord = new Participant();
-        attemptRecord.setName(name);
-        attemptRecord.setAttemptNumber(nextAttempt);
-        attemptRecord.setSeconds(seconds);
-        attemptRecord.setAttemptDateTime(java.time.LocalDateTime.now());
-        attemptRecord.setStatus(status.toUpperCase()); // WIN or LOSS
+        if ("WIN".equalsIgnoreCase(status)) {
+            participant.setCompletedDate(LocalDate.now());
+        }
 
-        participantRepository.save(attemptRecord);
+        participantRepository.save(participant);
     }
-
 }
