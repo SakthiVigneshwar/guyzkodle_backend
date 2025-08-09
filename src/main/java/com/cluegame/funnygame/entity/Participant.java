@@ -5,7 +5,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Document(collection = "participant")
 @Getter
@@ -18,10 +17,7 @@ public class Participant {
     private String id; // MongoDB uses String IDs by default
 
     private String name;
-    private Integer attemptNumber; // attempt count per player per day
+    private Integer attempts;
     private Integer seconds;
-    private LocalDateTime attemptDateTime; // exact date+time of attempt
-    private String status; // "WIN" or "LOSS"
-    private Integer attempts; // total attempts (lifetime or daily depending on logic)
-    private LocalDate completedDate; // win date
+    private LocalDate completedDate;
 }

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,8 @@ public class ParticipantService {
     @Autowired
     private ParticipantRepository participantRepository;
 
-    // ✅ Preload only names – leave other fields unset
+
+    // ✅ Only preload names – leave other fields unset (MongoDB won't store them)
     @PostConstruct
     public void preloadNames() {
         participantRepository.deleteAll();
@@ -34,47 +34,32 @@ public class ParticipantService {
             participantRepository.findByName(name).orElseGet(() -> {
                 Participant p = new Participant();
                 p.setName(name);
-                p.setAttempts(0);
                 return participantRepository.save(p);
             });
         }
     }
 
-    // ✅ Check if participant name exists
+    // ✅ Check if a participant name exists
     public boolean isValidParticipant(String name) {
         return participantRepository.findByName(name).isPresent();
     }
 
-    // ✅ Unified record method for WIN/LOSS
-    public void recordResult(String name, int seconds, String status, int attemptNumber) {
-        LocalDate today = LocalDate.now();
-
-        Participant participant = participantRepository
-                .findByNameAndCompletedDate(name, today)
-                .orElseGet(() -> participantRepository.findByName(name).orElse(new Participant()));
-
-        participant.setName(name);
-        participant.setAttemptNumber(attemptNumber);
-        participant.setSeconds(seconds > 0 ? seconds : null);
-        participant.setAttemptDateTime(LocalDateTime.now());
-        participant.setStatus(status);
-
-        // Attempts count
-        if (participant.getAttempts() == null) {
-            participant.setAttempts(1);
-        } else {
-            participant.setAttempts(participant.getAttempts() + 1);
+    // ✅ Record success attempt (used when UI submits time)
+    public void recordSuccess(String name, int seconds) {
+        Optional<Participant> optional = participantRepository.findByName(name);
+        if (optional.isPresent()) {
+            Participant participant = optional.get();
+            // Update only on submit
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
+            participant.setSeconds(seconds);
+            participant.setCompletedDate(LocalDate.now());
+            participantRepository.save(participant);
         }
-
-        // WIN → completedDate = today
-        if ("WIN".equalsIgnoreCase(status)) {
-            participant.setCompletedDate(today);
-        }
-
-        participantRepository.save(participant);
     }
 
-    // ✅ Today's leaderboard
+    // ✅ Get today's participants with time, sorted by seconds
     public List<Participant> getAllSortedByTimeForToday() {
         LocalDate today = LocalDate.now();
         return participantRepository.findAllByCompletedDate(today)
@@ -84,7 +69,7 @@ public class ParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get participants for a given date
+    // ✅ Get participants for any date
     public List<Participant> getAllSortedByTimeForDate(LocalDate date) {
         return participantRepository.findAllByCompletedDate(date)
                 .stream()
@@ -93,7 +78,7 @@ public class ParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get all participants (admin/debug)
+    // ✅ Get all participants (useful for debugging or admin UI)
     public List<Participant> getAllParticipants() {
         return participantRepository.findAll();
     }
