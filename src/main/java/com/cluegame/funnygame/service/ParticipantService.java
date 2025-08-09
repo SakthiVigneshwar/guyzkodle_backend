@@ -45,32 +45,19 @@ public class ParticipantService {
     }
 
     // ✅ Record success attempt (used when UI submits time)
-    public String recordGuessAttempt(String name, boolean isCorrect, int seconds) {
+    public void recordSuccess(String name, int seconds) {
         Optional<Participant> optional = participantRepository.findByName(name);
-
-        if (optional.isEmpty()) {
-            return "Participant not found";
-        }
-
-        Participant participant = optional.get();
-
-        if (Boolean.TRUE.equals(participant.getHasAttempted())) {
-            return "Already attempted. No more guesses allowed.";
-        }
-
-        // Mark as attempted, only one chance allowed
-        participant.setHasAttempted(true);
-        participant.setAttempts(1);
-
-        if (isCorrect) {
+        if (optional.isPresent()) {
+            Participant participant = optional.get();
+            // Update only on submit
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
             participant.setSeconds(seconds);
             participant.setCompletedDate(LocalDate.now());
+            participantRepository.save(participant);
         }
-
-        participantRepository.save(participant);
-        return isCorrect ? "Correct guess! Game completed." : "Wrong guess! Game over.";
     }
-
 
     // ✅ Get today's participants with time, sorted by seconds
     public List<Participant> getAllSortedByTimeForToday() {

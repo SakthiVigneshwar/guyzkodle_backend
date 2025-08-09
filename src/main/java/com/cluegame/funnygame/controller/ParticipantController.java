@@ -26,11 +26,9 @@ public class ParticipantController {
     public String submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
         int seconds = Integer.parseInt(body.get("seconds").toString());
-        boolean isCorrect = Boolean.parseBoolean(body.get("isCorrect").toString()); // pass this from frontend
-
-        return participantService.recordGuessAttempt(name, isCorrect, seconds);
+        participantService.recordSuccess(name, seconds);
+        return "Success";
     }
-
 
     // 🔥 Today's leaderboard
     @GetMapping("/today")
