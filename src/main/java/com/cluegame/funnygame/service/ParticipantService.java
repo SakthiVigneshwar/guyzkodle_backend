@@ -27,7 +27,7 @@ public class ParticipantService {
         List<String> names = List.of(
                 "brindss", "kandy", "sreethorfinn", "aadhuii",
                 "harikrishh", "aadhispeed", "achchu", "suruthi",
-                "logaprakash", "srenithii","briny","sakthii"
+                "logaprakash", "srenithii","briny","sakthii","sathyaa"
         );
 
         for (String name : names) {
