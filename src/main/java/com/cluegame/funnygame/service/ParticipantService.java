@@ -45,16 +45,17 @@ public class ParticipantService {
     }
 
     // ✅ Record success attempt (used when UI submits time)
-    public void recordSuccess(String name, int seconds) {
+    public void recordSuccess(String name, int seconds, String status) {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
-            // Update only on submit
-            participant.setAttempts(
-                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
-            );
-            participant.setSeconds(seconds);
-            participant.setCompletedDate(LocalDate.now());
+            if ("WIN".equalsIgnoreCase(status)) {
+                participant.setAttempts(
+                        participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+                );
+                participant.setSeconds(seconds);
+                participant.setCompletedDate(LocalDate.now());
+            }
             participantRepository.save(participant);
         }
     }

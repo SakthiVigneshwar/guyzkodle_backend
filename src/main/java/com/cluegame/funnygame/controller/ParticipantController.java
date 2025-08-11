@@ -21,12 +21,12 @@ public class ParticipantController {
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
     }
-
     @PostMapping("/submit")
     public String submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
         int seconds = Integer.parseInt(body.get("seconds").toString());
-        participantService.recordSuccess(name, seconds);
+        String status = body.get("status").toString();
+        participantService.recordSuccess(name, seconds, status);
         return "Success";
     }
 
