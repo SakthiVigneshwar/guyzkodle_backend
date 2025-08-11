@@ -45,20 +45,34 @@ public class ParticipantService {
     }
 
     // ✅ Record success attempt (used when UI submits time)
-    public void recordSuccess(String name, int seconds, String status) {
+    // Service
+    public void recordAttempt(String name) {
+        Optional<Participant> optional = participantRepository.findByName(name);
+        Participant participant;
+        if (optional.isPresent()) {
+            participant = optional.get();
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
+        } else {
+            participant = new Participant();
+            participant.setName(name);
+            participant.setAttempts(1);
+        }
+        participantRepository.save(participant);
+    }
+
+    public void recordSuccess(String name, int seconds) {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
-            if ("WIN".equalsIgnoreCase(status)) {
-                participant.setAttempts(
-                        participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
-                );
-                participant.setSeconds(seconds);
-                participant.setCompletedDate(LocalDate.now());
-            }
+            participant.setSeconds(seconds);
+            participant.setCompletedDate(LocalDate.now());
+            participant.setStatus("Win");
             participantRepository.save(participant);
         }
     }
+
 
     // ✅ Get today's participants with time, sorted by seconds
     public List<Participant> getAllSortedByTimeForToday() {
