@@ -25,9 +25,9 @@ public class ParticipantService {
         participantRepository.deleteAll();
 
         List<String> names = List.of(
-                "brindss", "kandy", "sreethorfinn", "aadhuii",
-                "harikrishh", "aadhispeed", "achchu", "suruthi",
-                "logaprakash", "srenithii","briny","sakthii","sathyaa"
+                "brindhaMK", "sreekandhaMK", "sreethorfinn", "aadhuii",
+                "harikrishh", "aadhiakimichi", "achchu", "surthi",
+                "logaprasath", "srenithi"
         );
 
         for (String name : names) {
@@ -49,20 +49,16 @@ public class ParticipantService {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
-
-            // Check if already completed today → don't increment attempts
-            if (participant.getCompletedDate() != null &&
-                    participant.getCompletedDate().isEqual(LocalDate.now())) {
-                return; // already completed today, no change
-            }
-            // First correct guess today → set attempts to 1
-            participant.setAttempts(1);
+            // Update only on submit
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
             participant.setSeconds(seconds);
             participant.setCompletedDate(LocalDate.now());
-
             participantRepository.save(participant);
         }
     }
+
     // ✅ Get today's participants with time, sorted by seconds
     public List<Participant> getAllSortedByTimeForToday() {
         LocalDate today = LocalDate.now();
