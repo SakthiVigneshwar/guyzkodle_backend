@@ -27,8 +27,8 @@ public class ParticipantService {
         List<String> names = List.of(
                 "brindss", "kandy", "sreethorfinn", "aadhuii",
                 "harikrishh", "aadhispeed", "achchu", "suruthi",
-                "logaprakash", "srenithii","briny","sakthii"
-                );
+                "logaprakash", "srenithii","briny","sakthii","sathyaa"
+        );
 
         for (String name : names) {
             participantRepository.findByName(name).orElseGet(() -> {
@@ -45,35 +45,24 @@ public class ParticipantService {
     }
 
     // ✅ Record success attempt (used when UI submits time)
-    // Service
-    public void recordAttempt(String name) {
-        Optional<Participant> optional = participantRepository.findByName(name);
-        Participant participant;
-        if (optional.isPresent()) {
-            participant = optional.get();
-            participant.setAttempts(
-                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
-            );
-        } else {
-            participant = new Participant();
-            participant.setName(name);
-            participant.setAttempts(1);
-        }
-        participantRepository.save(participant);
-    }
-
     public void recordSuccess(String name, int seconds) {
         Optional<Participant> optional = participantRepository.findByName(name);
         if (optional.isPresent()) {
             Participant participant = optional.get();
+
+            // Check if already completed today → don't increment attempts
+            if (participant.getCompletedDate() != null &&
+                    participant.getCompletedDate().isEqual(LocalDate.now())) {
+                return; // already completed today, no change
+            }
+            // First correct guess today → set attempts to 1
+            participant.setAttempts(1);
             participant.setSeconds(seconds);
             participant.setCompletedDate(LocalDate.now());
-            participant.setStatus("Win");
+
             participantRepository.save(participant);
         }
     }
-
-
     // ✅ Get today's participants with time, sorted by seconds
     public List<Participant> getAllSortedByTimeForToday() {
         LocalDate today = LocalDate.now();

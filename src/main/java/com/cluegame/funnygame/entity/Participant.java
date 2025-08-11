@@ -20,6 +20,4 @@ public class Participant {
     private Integer attempts;
     private Integer seconds;
     private LocalDate completedDate;
-    private String status;
-
 }

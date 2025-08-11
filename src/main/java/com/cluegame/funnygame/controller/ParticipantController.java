@@ -21,12 +21,6 @@ public class ParticipantController {
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
     }
-    @PostMapping("/attempt")
-    public String recordAttempt(@RequestBody Map<String, Object> body) {
-        String name = body.get("name").toString();
-        participantService.recordAttempt(name);
-        return "Attempt recorded";
-    }
 
     @PostMapping("/submit")
     public String submitResult(@RequestBody Map<String, Object> body) {
