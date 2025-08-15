@@ -70,6 +70,10 @@ public class ParticipantService {
                 .sorted(Comparator.comparingInt(Participant::getSeconds))
                 .collect(Collectors.toList());
     }
+    public List<Participant> getAllParticipants() {
+        return participantRepository.findAll();
+    }
+
 
 
 }
