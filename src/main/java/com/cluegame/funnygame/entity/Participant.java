@@ -1,5 +1,6 @@
 package com.cluegame.funnygame.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -21,6 +22,7 @@ public class Participant {
     private Integer attempts;
     private Integer seconds;
     private LocalDate completedDate;
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "Asia/Kolkata")
     private LocalTime completedTime;
 
 }

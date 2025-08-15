@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,10 @@ public class ParticipantService {
             );
             participant.setSeconds(seconds);
             participant.setCompletedDate(LocalDate.now());
-            participant.setCompletedTime(LocalTime.now());
+
+            // ✅ Store time in IST
+            ZoneId istZone = ZoneId.of("Asia/Kolkata");
+            participant.setCompletedTime(LocalTime.now(istZone));
 
             participantRepository.save(participant);
         }
@@ -58,6 +62,7 @@ public class ParticipantService {
                 .sorted(Comparator.comparingInt(Participant::getSeconds))
                 .collect(Collectors.toList());
     }
+
     public List<Participant> getAllSortedByTimeForDateAndSlot(LocalDate date, String slot) {
         return participantRepository.findAllByCompletedDate(date)
                 .stream()
@@ -70,10 +75,8 @@ public class ParticipantService {
                 .sorted(Comparator.comparingInt(Participant::getSeconds))
                 .collect(Collectors.toList());
     }
+
     public List<Participant> getAllParticipants() {
         return participantRepository.findAll();
     }
-
-
-
 }
