@@ -2,7 +2,6 @@ package com.cluegame.funnygame.service;
 
 import com.cluegame.funnygame.entity.Participant;
 import com.cluegame.funnygame.repository.ParticipantRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,27 +16,6 @@ public class ParticipantService {
 
     @Autowired
     private ParticipantRepository participantRepository;
-
-
-    // ✅ Only preload names – leave other fields unset (MongoDB won't store them)
-    @PostConstruct
-    public void preloadNames() {
-        participantRepository.deleteAll();
-
-        List<String> names = List.of(
-                "brindhaMK", "sreekandhaMK", "sreethorfinn", "aadhuii",
-                "harikrishh", "aadhiakimichi", "achchu", "surthi",
-                "logaprasath", "srenithi"
-        );
-
-        for (String name : names) {
-            participantRepository.findByName(name).orElseGet(() -> {
-                Participant p = new Participant();
-                p.setName(name);
-                return participantRepository.save(p);
-            });
-        }
-    }
 
     // ✅ Check if a participant name exists
     public boolean isValidParticipant(String name) {
@@ -77,9 +55,18 @@ public class ParticipantService {
                 .sorted(Comparator.comparingInt(Participant::getSeconds))
                 .collect(Collectors.toList());
     }
-
-    // ✅ Get all participants (useful for debugging or admin UI)
-    public List<Participant> getAllParticipants() {
-        return participantRepository.findAll();
+    public List<Participant> getAllSortedByTimeForDateAndSlot(LocalDate date, String slot) {
+        return participantRepository.findAllByCompletedDate(date)
+                .stream()
+                .filter(p -> p.getSeconds() != null && p.getSeconds() > 0)
+                .filter(p -> {
+                    if (p.getCompletedTime() == null) return false;
+                    int hour = p.getCompletedTime().getHour();
+                    return "AM".equalsIgnoreCase(slot) ? hour < 12 : hour >= 12;
+                })
+                .sorted(Comparator.comparingInt(Participant::getSeconds))
+                .collect(Collectors.toList());
     }
+
+
 }

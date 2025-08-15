@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Document(collection = "participant")
 @Getter
@@ -20,4 +21,6 @@ public class Participant {
     private Integer attempts;
     private Integer seconds;
     private LocalDate completedDate;
+    private LocalTime completedTime;
+
 }

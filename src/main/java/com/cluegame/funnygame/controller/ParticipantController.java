@@ -42,8 +42,10 @@ public class ParticipantController {
         LocalDate localDate = LocalDate.parse(date); // expects format: yyyy-MM-dd
         return participantService.getAllSortedByTimeForDate(localDate);
     }
-    @GetMapping("/all")
-    public List<Participant> getAllParticipants() {
-        return participantService.getAllParticipants();
+    @GetMapping("/date/{date}/slot/{slot}")
+    public List<Participant> getResultsForDateAndSlot(@PathVariable String date, @PathVariable String slot) {
+        LocalDate localDate = LocalDate.parse(date);
+        return participantService.getAllSortedByTimeForDateAndSlot(localDate, slot);
     }
+
 }
