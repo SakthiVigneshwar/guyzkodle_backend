@@ -59,29 +59,44 @@ public class ParticipantService {
         return participantRepository.findByName(name).isPresent();
     }
 
-    // ✅ Record success attempt (now separated per date + slot)
+    // ✅ Record success attempt (per date + slot)
     public void recordSuccess(String name, int seconds, String slot) {
         LocalDate today = LocalDate.now();
         ZoneId istZone = ZoneId.of("Asia/Kolkata");
 
-        // Check for existing record for same name + date + slot
-        Optional<Participant> optional = participantRepository.findByNameAndCompletedDateAndSlot(name, today, slot);
+        // Normalize slot (in case frontend sends AM/PM or morning/afternoon)
+        String normalizedSlot = normalizeSlot(slot);
+
+        // Check for existing record (same name + date + slot)
+        Optional<Participant> optional =
+                participantRepository.findByNameAndCompletedDateAndSlot(name, today, normalizedSlot);
 
         Participant participant;
         if (optional.isPresent()) {
             participant = optional.get();
-            participant.setAttempts(participant.getAttempts() == null ? 1 : participant.getAttempts() + 1);
+            participant.setAttempts(
+                    participant.getAttempts() == null ? 1 : participant.getAttempts() + 1
+            );
         } else {
             participant = new Participant();
             participant.setName(name);
             participant.setAttempts(1);
             participant.setCompletedDate(today);
-            participant.setSlot(slot); // ✅ New: separate record per slot
+            participant.setSlot(normalizedSlot); // ✅ morning/afternoon
         }
 
         participant.setSeconds(seconds);
         participant.setCompletedTime(LocalTime.now(istZone));
         participantRepository.save(participant);
+    }
+
+    // ✅ Normalize slot values (AM → morning, PM → afternoon)
+    private String normalizeSlot(String slot) {
+        if (slot == null) return null;
+        slot = slot.trim().toLowerCase();
+        if (slot.equals("am") || slot.equals("morning")) return "morning";
+        if (slot.equals("pm") || slot.equals("afternoon")) return "afternoon";
+        return slot;
     }
 
     // ✅ Get today's participants with time, sorted by seconds
@@ -105,10 +120,12 @@ public class ParticipantService {
 
     // ✅ Get participants for specific date & slot
     public List<Participant> getAllSortedByTimeForDateAndSlot(LocalDate date, String slot) {
+        String normalizedSlot = normalizeSlot(slot);
+
         return participantRepository.findAllByCompletedDate(date)
                 .stream()
                 .filter(p -> p.getSeconds() != null && p.getSeconds() > 0)
-                .filter(p -> slot.equalsIgnoreCase(p.getSlot()))
+                .filter(p -> p.getSlot() != null && p.getSlot().equalsIgnoreCase(normalizedSlot))
                 .sorted(Comparator.comparingInt(Participant::getSeconds))
                 .collect(Collectors.toList());
     }
