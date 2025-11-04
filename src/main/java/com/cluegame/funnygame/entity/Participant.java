@@ -24,5 +24,6 @@ public class Participant {
     private LocalDate completedDate;
     @JsonFormat(pattern = "HH:mm:ss", timezone = "Asia/Kolkata")
     private LocalTime completedTime;
+    private String slot;
 
 }

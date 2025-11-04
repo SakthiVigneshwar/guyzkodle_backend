@@ -31,9 +31,12 @@ public class ParticipantController {
     public String submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
         int seconds = Integer.parseInt(body.get("seconds").toString());
-        participantService.recordSuccess(name, seconds);
+        String slot = body.get("slot").toString(); // ✅ new field from frontend
+
+        participantService.recordSuccess(name, seconds, slot);
         return "Success";
     }
+
 
     // ✅ Get today's leaderboard
     @GetMapping("/today")

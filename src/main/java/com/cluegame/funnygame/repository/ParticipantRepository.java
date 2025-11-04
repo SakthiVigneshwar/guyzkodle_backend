@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface ParticipantRepository extends MongoRepository<Participant, String> {
     Optional<Participant> findByName(String name);
-    List<Participant> findAllByCompletedDate(LocalDate date);
+    Optional<Participant> findByNameAndCompletedDateAndSlot(String name, LocalDate completedDate, String slot);
+    List<Participant> findAllByCompletedDate(LocalDate completedDate);
 }
