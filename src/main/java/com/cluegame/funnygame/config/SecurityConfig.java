@@ -17,23 +17,37 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // ✅ Disable CSRF for APIs
                 .csrf(csrf -> csrf.disable())
+
+                // ✅ Enable CORS using the bean below
                 .cors(Customizer.withDefaults())
+
+                // ✅ Permit all requests (no auth yet)
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
+        // ✅ Use full URLs (with https://)
         config.setAllowedOrigins(List.of(
-                "guyzzkodle-frontend-six.vercel.app" // ✅ your deployed frontend
+                "https://guyzzkodle-frontend-six.vercel.app",  // Production frontend
+                "https://guyzzkodle-frontend.vercel.app",      // Older deployment
+                "http://localhost:3000"                        // Local development
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+
+        // Optional: Expose headers if needed (like Authorization)
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
