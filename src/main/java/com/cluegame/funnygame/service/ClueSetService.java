@@ -6,13 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
 @Service
 public class ClueSetService {
-
     @Autowired
     private ClueSetRepository repository;
-
     public Optional<ClueSet> getClueSetByDateAndSlot(String date, String slot) {
         return repository.findByDateAndSlot(date, slot);
     }

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/clues")
+@RequestMapping("/clues")
 @CrossOrigin(origins = "https://guyzzkodle-frontend-six.vercel.app") // ✅ safer CORS
 public class ClueSetController {
 

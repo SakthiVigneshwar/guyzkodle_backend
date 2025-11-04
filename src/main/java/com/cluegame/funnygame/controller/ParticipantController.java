@@ -4,19 +4,15 @@ import com.cluegame.funnygame.entity.Participant;
 import com.cluegame.funnygame.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
 @RestController
-@RequestMapping("/api/participant")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("participant")
+@CrossOrigin(origins = "https://guyzzkodle-frontend-six.vercel.app")
 public class ParticipantController {
-
     @Autowired
     private ParticipantService participantService;
-
     @GetMapping("/check/{name}")
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
