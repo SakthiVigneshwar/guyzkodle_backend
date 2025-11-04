@@ -14,7 +14,6 @@ import java.util.*;
         "https://guyzzkodle-frontend-six.vercel.app"
 })
 public class ClueSetController {
-
     @Autowired
     private ClueSetService service;
 
@@ -25,8 +24,7 @@ public class ClueSetController {
 
         Optional<ClueSet> morningOpt = service.getClueSetByDateAndSlot(date, "morning");
         Optional<ClueSet> afternoonOpt = service.getClueSetByDateAndSlot(date, "afternoon");
-
-        // Prepare morning data
+        // Morning data
         Map<String, Object> morningData = new HashMap<>();
         if (morningOpt.isPresent()) {
             ClueSet morning = morningOpt.get();
@@ -37,7 +35,7 @@ public class ClueSetController {
             morningData.put("answer", "");
         }
 
-        // Prepare afternoon data
+        // Afternoon data
         Map<String, Object> afternoonData = new HashMap<>();
         if (afternoonOpt.isPresent()) {
             ClueSet afternoon = afternoonOpt.get();
@@ -54,36 +52,50 @@ public class ClueSetController {
         return response;
     }
 
-    // ✅ For admin - save both morning & afternoon together
+    // ✅ For admin - save both morning & afternoon together (now with full null safety)
     @PostMapping("/save")
     public String saveClueSet(@RequestBody Map<String, Object> body) {
         try {
             String date = (String) body.get("date");
-            Map<String, Object> morning = (Map<String, Object>) body.get("morning");
-            Map<String, Object> afternoon = (Map<String, Object>) body.get("afternoon");
-
-            if (morning != null) {
-                ClueSet morningSet = new ClueSet();
-                morningSet.setDate(date);
-                morningSet.setSlot("morning");
-                morningSet.setClues((List<String>) morning.get("clues"));
-                morningSet.setAnswer((String) morning.get("answer"));
-                service.saveClueSet(morningSet);
+            if (date == null || date.isBlank()) {
+                return "❌ Date is required!";
             }
 
-            if (afternoon != null) {
-                ClueSet afternoonSet = new ClueSet();
-                afternoonSet.setDate(date);
-                afternoonSet.setSlot("afternoon");
-                afternoonSet.setClues((List<String>) afternoon.get("clues"));
-                afternoonSet.setAnswer((String) afternoon.get("answer"));
-                service.saveClueSet(afternoonSet);
+            Object morningObj = body.get("morning");
+            Object afternoonObj = body.get("afternoon");
+
+            if (morningObj instanceof Map<?, ?> morningMap) {
+                List<String> clues = (List<String>) morningMap.get("clues");
+                String answer = (String) morningMap.get("answer");
+
+                if (clues != null && !clues.isEmpty()) {
+                    ClueSet morningSet = new ClueSet();
+                    morningSet.setDate(date);
+                    morningSet.setSlot("morning");
+                    morningSet.setClues(clues);
+                    morningSet.setAnswer(answer);
+                    service.saveClueSet(morningSet);
+                }
+            }
+
+            if (afternoonObj instanceof Map<?, ?> afternoonMap) {
+                List<String> clues = (List<String>) afternoonMap.get("clues");
+                String answer = (String) afternoonMap.get("answer");
+
+                if (clues != null && !clues.isEmpty()) {
+                    ClueSet afternoonSet = new ClueSet();
+                    afternoonSet.setDate(date);
+                    afternoonSet.setSlot("afternoon");
+                    afternoonSet.setClues(clues);
+                    afternoonSet.setAnswer(answer);
+                    service.saveClueSet(afternoonSet);
+                }
             }
 
             return "✅ Clues saved successfully!";
         } catch (Exception e) {
             e.printStackTrace();
-            return "❌ Failed to save clues!";
+            return "❌ Failed to save clues: " + e.getMessage();
         }
     }
 }
