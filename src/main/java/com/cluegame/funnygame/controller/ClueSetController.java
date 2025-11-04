@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/clues")
-@CrossOrigin(origins = "https://guyzzkodle-frontend-six.vercel.app") // ✅ safer CORS
+@CrossOrigin(origins = "https://guyzzkodle-frontend.vercel.app") // ✅ safer CORS
 public class ClueSetController {
 
     @Autowired

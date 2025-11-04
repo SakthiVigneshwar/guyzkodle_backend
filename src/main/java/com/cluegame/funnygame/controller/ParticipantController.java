@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 @RestController
 @RequestMapping("participant")
-@CrossOrigin(origins = "https://guyzzkodle-frontend-six.vercel.app")
+@CrossOrigin(origins = "https://guyzzkodle-frontend.vercel.app")
 public class ParticipantController {
     @Autowired
     private ParticipantService participantService;
@@ -17,7 +17,6 @@ public class ParticipantController {
     public boolean checkParticipant(@PathVariable String name) {
         return participantService.isValidParticipant(name);
     }
-
     @PostMapping("/submit")
     public String submitResult(@RequestBody Map<String, Object> body) {
         String name = body.get("name").toString();
@@ -25,13 +24,11 @@ public class ParticipantController {
         participantService.recordSuccess(name, seconds);
         return "Success";
     }
-
     // 🔥 Today's leaderboard
     @GetMapping("/today")
     public List<Participant> getTodayResults() {
         return participantService.getAllSortedByTimeForToday();
     }
-
     // 🔥 Optional: pass any date (yyyy-mm-dd) to get results
     @GetMapping("/date/{date}")
     public List<Participant> getResultsForDate(@PathVariable String date) {
