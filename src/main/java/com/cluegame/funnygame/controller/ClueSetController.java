@@ -5,38 +5,60 @@ import com.cluegame.funnygame.service.ClueSetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/clues")
-@CrossOrigin(origins = "https://guyzzkodle-frontend.vercel.app") // ✅ safer CORS
+@CrossOrigin(origins = {
+        "https://guyzzkodle-frontend.vercel.app",
+        "https://guyzzkodle-frontend-six.vercel.app"
+})
 public class ClueSetController {
 
     @Autowired
     private ClueSetService service;
 
-    // ✅ Combine both morning & afternoon in a single response
+    // ✅ For user frontend - combine both morning & afternoon slots
     @GetMapping
     public Map<String, Object> getClueSets(@RequestParam String date) {
         Map<String, Object> response = new HashMap<>();
 
-        Optional<ClueSet> morning = service.getClueSetByDateAndSlot(date, "morning");
-        Optional<ClueSet> afternoon = service.getClueSetByDateAndSlot(date, "afternoon");
+        Optional<ClueSet> morningOpt = service.getClueSetByDateAndSlot(date, "morning");
+        Optional<ClueSet> afternoonOpt = service.getClueSetByDateAndSlot(date, "afternoon");
 
-        response.put("morning", morning.orElse(null));
-        response.put("afternoon", afternoon.orElse(null));
+        // Prepare morning data
+        Map<String, Object> morningData = new HashMap<>();
+        if (morningOpt.isPresent()) {
+            ClueSet morning = morningOpt.get();
+            morningData.put("clues", morning.getClues());
+            morningData.put("answer", morning.getAnswer());
+        } else {
+            morningData.put("clues", List.of());
+            morningData.put("answer", "");
+        }
+
+        // Prepare afternoon data
+        Map<String, Object> afternoonData = new HashMap<>();
+        if (afternoonOpt.isPresent()) {
+            ClueSet afternoon = afternoonOpt.get();
+            afternoonData.put("clues", afternoon.getClues());
+            afternoonData.put("answer", afternoon.getAnswer());
+        } else {
+            afternoonData.put("clues", List.of());
+            afternoonData.put("answer", "");
+        }
+
+        response.put("morning", morningData);
+        response.put("afternoon", afternoonData);
 
         return response;
     }
 
-    // ✅ Save morning & afternoon together
+    // ✅ For admin - save both morning & afternoon together
     @PostMapping("/save")
     public String saveClueSet(@RequestBody Map<String, Object> body) {
         try {
             String date = (String) body.get("date");
-
             Map<String, Object> morning = (Map<String, Object>) body.get("morning");
             Map<String, Object> afternoon = (Map<String, Object>) body.get("afternoon");
 
@@ -44,7 +66,7 @@ public class ClueSetController {
                 ClueSet morningSet = new ClueSet();
                 morningSet.setDate(date);
                 morningSet.setSlot("morning");
-                morningSet.setClues((java.util.List<String>) morning.get("clues"));
+                morningSet.setClues((List<String>) morning.get("clues"));
                 morningSet.setAnswer((String) morning.get("answer"));
                 service.saveClueSet(morningSet);
             }
@@ -53,7 +75,7 @@ public class ClueSetController {
                 ClueSet afternoonSet = new ClueSet();
                 afternoonSet.setDate(date);
                 afternoonSet.setSlot("afternoon");
-                afternoonSet.setClues((java.util.List<String>) afternoon.get("clues"));
+                afternoonSet.setClues((List<String>) afternoon.get("clues"));
                 afternoonSet.setAnswer((String) afternoon.get("answer"));
                 service.saveClueSet(afternoonSet);
             }
